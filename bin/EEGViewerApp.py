@@ -28,6 +28,10 @@ class EEGAppController(object):
         self.selectedRawFile = None
         # MNE Object from selectedRawFile
         self.rawObject = None
+        # maps channel name : plotData object
+        self.chToPlotDataDict = dict()
+        # maps channel name to index of channel in rawObject._data
+        self.chNameToIndex = dict()
 
         self.start_App()
 
@@ -42,6 +46,7 @@ class EEGAppController(object):
         self.eegplot = self.ui.graphicsView.addPlot(title="EEG Signal")
 
         self.ui.actionLoad_File.triggered.connect(self.file_load_sequence)        
+        self.ui.eeg_channel_combo_box.currentIndexChanged.connect(self.channel_selected_sequence)
 
         #sys.exit(self.app.exec_())
         self.MainWindow.showMaximized()
@@ -52,7 +57,25 @@ class EEGAppController(object):
         """
         self.selectedFile = self.show_dialog()
         self.rawObject = self.read_raw_file(str(self.selectedFile.name))
+        for index, ch_name in enumerate(self.rawObject.ch_names):
+            self.chNameToIndex[ch_name] = index
         self.ui.eeg_channel_combo_box.addItems(self.rawObject.ch_names)
+        
+    def channel_selected_sequence(self):
+        """ Show one of the signals in the graphicsView when a channel
+        is selected in the comboBox """
+        #print("Available channels: {}".format(self.rawObject.ch_names))
+        #tmp_channel = self.rawObject.pick_channels([str(self.ui.eeg_channel_combo_box.currentText())], copy=True)
+        #plotData = self.eegplot.plot(tmp_channel._data.T[:,0])
+        #self.chToPlotDataDict[str(self.ui.eeg_channel_combo_box.currentText())] = plotData
+        #return
+        #data, times = raw[:5, int(sfreq * 1):int(sfreq * 3)]
+        self.eegplot.clear()
+        channelSelection = str(self.ui.eeg_channel_combo_box.currentText())
+        data, times = self.rawObject[self.chNameToIndex[channelSelection], :]
+        plotData = self.eegplot.plot(times, data.T[:,0])
+        self.chToPlotDataDict[channelSelection] = plotData
+        return
         
 
     def show_dialog(self):

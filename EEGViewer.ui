@@ -18,7 +18,7 @@
     <item row="0" column="0">
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -34,6 +34,11 @@
        <attribute name="title">
         <string>Tab 2</string>
        </attribute>
+       <layout class="QGridLayout" name="gridLayout_8">
+        <item row="0" column="0">
+         <widget class="GraphicsLayoutWidget" name="graphicsView_2"/>
+        </item>
+       </layout>
       </widget>
      </widget>
     </item>
@@ -166,7 +171,7 @@
            <widget class="QComboBox" name="eeg_channel_combo_box_3"/>
           </item>
           <item row="2" column="2">
-           <widget class="QDoubleSpinBox" name="epoch_tmin_spinbox_2">
+           <widget class="QDoubleSpinBox" name="epoch_tmin_spinbox">
             <property name="minimum">
              <double>-1.000000000000000</double>
             </property>
@@ -189,7 +194,7 @@
            </widget>
           </item>
           <item row="3" column="2">
-           <widget class="QDoubleSpinBox" name="epoch_tmax_spinbox_2">
+           <widget class="QDoubleSpinBox" name="epoch_tmax_spinbox">
             <property name="minimum">
              <double>-1.000000000000000</double>
             </property>
@@ -207,7 +212,7 @@
          </layout>
         </item>
         <item row="1" column="0">
-         <widget class="QPushButton" name="pushButton_2">
+         <widget class="QPushButton" name="create_epochs_button">
           <property name="text">
            <string>Create Epochs</string>
           </property>

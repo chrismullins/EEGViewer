@@ -28,6 +28,10 @@ class EEGAppController(object):
         self.selectedRawFile = None
         # MNE Object from selectedRawFile
         self.rawObject = None
+        # Events array
+        self.events = None
+        # Epochs object
+        self.epochs = None
 
         self.start_App()
 
@@ -40,9 +44,11 @@ class EEGAppController(object):
         self.ui = eegviewer.gui.Ui_MainWindow()
         self.ui.setupUi(self.MainWindow)
         self.eegplot = self.ui.graphicsView.addPlot(title="EEG Signal")
+        self.epochplot = self.ui.graphicsView_2.addPlot(title="Epoch Signals")
 
         self.ui.actionLoad_File.triggered.connect(self.file_load_sequence)        
         self.ui.eeg_channel_combo_box.currentIndexChanged.connect(self.channel_selected_sequence)
+        self.ui.create_epochs_button.pressed.connect(self.compute_epochs_sequence)
 
         #sys.exit(self.app.exec_())
         self.MainWindow.showMaximized()
@@ -52,7 +58,7 @@ class EEGAppController(object):
         """ Load a signal from a selected file, and show the plot.
         """
         self.selectedFile = self.show_dialog()
-        self.rawObject = self.read_raw_file(str(self.selectedFile.name))
+        self.rawObject, self.events = self.read_raw_file(str(self.selectedFile.name))
         self.ui.eeg_channel_combo_box.addItems(self.rawObject.ch_names)
         
     def channel_selected_sequence(self):
@@ -64,7 +70,6 @@ class EEGAppController(object):
         plotData = self.eegplot.plot(times, data.T[:,0])
         return
         
-
     def show_dialog(self):
         """ Open the QFileDialog, return the file object """
         fname = QtGui.QFileDialog.getOpenFileName()
@@ -74,7 +79,30 @@ class EEGAppController(object):
     def read_raw_file(self, filename):
         """ Read the raw file from filename """
         if filename.endswith('.vhdr'):
-            return mne.io.read_raw_brainvision(vhdr_fname=filename, preload=True)
+            rawObject =  mne.io.read_raw_brainvision(vhdr_fname=filename, preload=True)
+            events = rawObject.get_brainvision_events()
+            # Use every other since we only care about trigger "on"
+            events = events[::2]
+            return rawObject, events
+
+    def compute_epochs_sequence(self):
+        """ Compute and display epochs when the button is pressed """
+        #epochs = mne.Epochs(raw_edf, events_trig_on, event_id, tmin, tmax, proj=True, baseline=baseline, preload=False) 
+        event_id = dict(stim_on=1)
+        print(":::::")
+        print(type(self.ui.epoch_tmin_spinbox.value))
+        self.epochs = mne.Epochs(raw=self.rawObject, \
+                                 events=self.events, \
+                                 event_id=event_id,  \
+                                 tmin=self.ui.epoch_tmin_spinbox.value(), \
+                                 tmax=self.ui.epoch_tmax_spinbox.value(), \
+                                 proj=True, \
+                                 baseline=(None, 0), \
+                                 preload=True)
+        channelSelectionIndex = self.epochs.ch_names.index(str(self.ui.eeg_channel_combo_box.currentText()))
+        data, times = self.epochs[channelSelectionIndex, :]
+        plotData = self.epochplot.plot(times, data.T[:,0])
+        
 
 
 #---------------------------------------------------------------------------

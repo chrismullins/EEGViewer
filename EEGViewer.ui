@@ -167,9 +167,6 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="2">
-           <widget class="QComboBox" name="eeg_channel_combo_box_3"/>
-          </item>
           <item row="2" column="2">
            <widget class="QDoubleSpinBox" name="epoch_tmin_spinbox">
             <property name="minimum">
@@ -206,6 +203,19 @@
             </property>
             <property name="value">
              <double>0.500000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2">
+           <widget class="QComboBox" name="epoch_channel_combo_box"/>
+          </item>
+          <item row="4" column="2">
+           <widget class="QSpinBox" name="epoch_number_spinbox"/>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>Epoch #:</string>
             </property>
            </widget>
           </item>

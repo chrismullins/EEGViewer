@@ -48,7 +48,10 @@ class EEGAppController(object):
 
         self.ui.actionLoad_File.triggered.connect(self.file_load_sequence)        
         self.ui.eeg_channel_combo_box.currentIndexChanged.connect(self.channel_selected_sequence)
+        # Epochs stuff
         self.ui.create_epochs_button.pressed.connect(self.compute_epochs_sequence)
+        self.ui.epoch_channel_combo_box.currentIndexChanged.connect(self.epoch_update_plot)
+        self.ui.epoch_number_spinbox.valueChanged.connect(self.epoch_update_plot)
 
         #sys.exit(self.app.exec_())
         self.MainWindow.showMaximized()
@@ -89,8 +92,6 @@ class EEGAppController(object):
         """ Compute and display epochs when the button is pressed """
         #epochs = mne.Epochs(raw_edf, events_trig_on, event_id, tmin, tmax, proj=True, baseline=baseline, preload=False) 
         event_id = dict(stim_on=1)
-        print(":::::")
-        print(type(self.ui.epoch_tmin_spinbox.value))
         self.epochs = mne.Epochs(raw=self.rawObject, \
                                  events=self.events, \
                                  event_id=event_id,  \
@@ -99,9 +100,18 @@ class EEGAppController(object):
                                  proj=True, \
                                  baseline=(None, 0), \
                                  preload=True)
-        channelSelectionIndex = self.epochs.ch_names.index(str(self.ui.eeg_channel_combo_box.currentText()))
-        data, times = self.epochs[channelSelectionIndex, :]
-        plotData = self.epochplot.plot(times, data.T[:,0])
+        self.ui.epoch_channel_combo_box.addItems(self.epochs.ch_names)
+        self.ui.epoch_number_spinbox.maximum = self.epochs._data.shape[0]
+        
+
+    def epoch_update_plot(self):
+        self.epochplot.clear()
+        channelSelectionIndex = self.epochs.ch_names.index(str(self.ui.epoch_channel_combo_box.currentText()))
+        epochSelectionIndex = self.ui.epoch_number_spinbox.value()
+        #epochs._data addressed as: [epoch,channel,sample] so its shape is 200x63x3500
+        times = self.epochs.times
+        data = self.epochs._data[epochSelectionIndex, channelSelectionIndex, :]
+        plotData = self.epochplot.plot(times, data)
         
 
 

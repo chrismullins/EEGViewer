@@ -32,6 +32,8 @@ class EEGAppController(object):
         self.events = None
         # Epochs object
         self.epochs = None
+        # Evoked object
+        self.evoked = None
 
         self.start_App()
 
@@ -45,6 +47,7 @@ class EEGAppController(object):
         self.ui.setupUi(self.MainWindow)
         self.eegplot = self.ui.graphicsView.addPlot(title="EEG Signal")
         self.epochplot = self.ui.graphicsView_2.addPlot(title="Epoch Signals")
+        self.evokedplot = self.ui.graphicsView_3.addPlot(title="Evoked Plot")
 
         self.ui.actionLoad_File.triggered.connect(self.file_load_sequence)        
         self.ui.eeg_channel_combo_box.currentIndexChanged.connect(self.channel_selected_sequence)
@@ -52,6 +55,10 @@ class EEGAppController(object):
         self.ui.create_epochs_button.pressed.connect(self.compute_epochs_sequence)
         self.ui.epoch_channel_combo_box.currentIndexChanged.connect(self.epoch_update_plot)
         self.ui.epoch_number_spinbox.valueChanged.connect(self.epoch_update_plot)
+
+        # Evoked stuff
+        self.ui.create_evoked_button.pressed.connect(self.compute_evoked_sequence)
+        self.ui.evoked_channel_combo_box.currentIndexChanged.connect(self.evoked_update_plot)
 
         #sys.exit(self.app.exec_())
         self.MainWindow.showMaximized()
@@ -105,6 +112,7 @@ class EEGAppController(object):
         
 
     def epoch_update_plot(self):
+        """ Update the epochs plot. """
         self.epochplot.clear()
         channelSelectionIndex = self.epochs.ch_names.index(str(self.ui.epoch_channel_combo_box.currentText()))
         epochSelectionIndex = self.ui.epoch_number_spinbox.value()
@@ -112,6 +120,19 @@ class EEGAppController(object):
         times = self.epochs.times
         data = self.epochs._data[epochSelectionIndex, channelSelectionIndex, :]
         plotData = self.epochplot.plot(times, data)
+
+    def compute_evoked_sequence(self):
+        """ Compute the evoked response from the epochs. """
+        self.evoked = self.epochs.average()
+        self.ui.evoked_channel_combo_box.addItems(self.evoked.ch_names)
+        
+    def evoked_update_plot(self):
+        """ Update the evoked plot. """
+        self.evokedplot.clear()
+        channelSelectionIndex = self.evoked.ch_names.index(str(self.ui.evoked_channel_combo_box.currentText()))
+        times = self.evoked.times
+        data = self.evoked.data[channelSelectionIndex]
+        plotData = self.evokedplot.plot(times, data)
         
 
 
